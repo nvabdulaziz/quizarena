@@ -1,0 +1,33 @@
+# Render Blueprint: managed PostgreSQL + Node web service (WebSocket-capable).
+databases:
+  - name: quizarena-db
+    plan: basic-256mb
+    databaseName: quizarena
+
+services:
+  - type: web
+    name: quizarena-server
+    runtime: node
+    rootDir: server
+    plan: starter
+    buildCommand: npm install && npx prisma generate
+    preDeployCommand: npx prisma migrate deploy
+    startCommand: npm start
+    healthCheckPath: /health
+    disk:                      # persistent storage for uploaded question images
+      name: uploads
+      mountPath: /var/data/uploads
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: quizarena-db, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: CLIENT_ORIGINS
+        sync: false            # e.g. https://your-app.vercel.app
+      - key: CLIENT_URL
+        sync: false

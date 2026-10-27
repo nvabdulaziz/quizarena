@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  language     String   @default("uz")
+  createdAt    DateTime @default(now())
+  quizzes      Quiz[]
+  games        GameSession[]
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  teacherId   String
+  title       String
+  description String   @default("")
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  games       GameSession[]
+
+  @@index([teacherId, updatedAt])
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  quizId       String
+  position     Int
+  text         String
+  imageUrl     String?
+  timeLimit    Int      @default(20)
+  points       Int      @default(1000)
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers      Answer[]
+  playerAnswers PlayerAnswer[]
+
+  @@index([quizId, position])
+}
+
+model Answer {
+  id          String   @id @default(cuid())
+  questionId  String
+  position    Int
+  text        String
+  isCorrect   Boolean  @default(false)
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, position])
+}
+
+enum GameStatus {
+  LOBBY
+  IN_PROGRESS
+  FINISHED
+  ABORTED
+}
+
+model GameSession {
+  id          String     @id @default(cuid())
+  pin         String
+  quizId      String
+  teacherId   String
+  status      GameStatus @default(LOBBY)
+  streakBonus Int        @default(100)
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  createdAt   DateTime   @default(now())
+  quiz        Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  teacher     Teacher    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  players     Player[]
+  results     GameResult[]
+
+  @@index([pin, status])
+  @@index([teacherId, createdAt])
+  @@index([quizId])
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  gameId        String
+  nickname      String
+  reconnectToken String  @unique
+  joinedAt      DateTime @default(now())
+  game          GameSession @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  answers       PlayerAnswer[]
+  scores        Score[]
+  result        GameResult?
+
+  @@unique([gameId, nickname])
+  @@index([gameId])
+}
+
+model PlayerAnswer {
+  id           String   @id @default(cuid())
+  playerId     String
+  questionId   String
+  gameId       String
+  answerIds    String[]
+  isCorrect    Boolean
+  timeMs       Int
+  pointsEarned Int
+  createdAt    DateTime @default(now())
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, questionId])
+  @@index([gameId, questionId])
+}
+
+model Score {
+  id         String   @id @default(cuid())
+  playerId   String
+  questionIdx Int
+  points     Int
+  total      Int
+  streak     Int
+  rank       Int
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, questionIdx])
+}
+
+model GameResult {
+  id           String   @id @default(cuid())
+  gameId       String
+  playerId     String   @unique
+  finalRank    Int
+  finalScore   Int
+  correctCount Int
+  totalAnswered Int
+  game         GameSession @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, finalRank])
+}

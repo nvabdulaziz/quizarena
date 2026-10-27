@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body, #root { min-height: 100%; }
+body {
+  @apply font-sans text-white antialiased;
+  background: #2a0f5c;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-extrabold transition active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:pointer-events-none select-none; }
+  .btn-primary { @apply btn bg-sun text-ink shadow-pop hover:brightness-105; }
+  .btn-pink { @apply btn bg-bubble text-white shadow-pop hover:brightness-105; }
+  .btn-green { @apply btn bg-mint text-white shadow-pop hover:brightness-105; }
+  .btn-ghost { @apply btn bg-white/10 text-white hover:bg-white/20; }
+  .btn-danger { @apply btn bg-coral text-white shadow-popsm hover:brightness-105; }
+  .card { @apply rounded-3xl bg-white text-ink p-5 shadow-pop; }
+  .glass { @apply rounded-3xl bg-white/10 backdrop-blur border border-white/10; }
+  .input { @apply w-full rounded-2xl bg-white text-ink px-4 py-3 font-bold placeholder:text-ink/40 outline-none focus:ring-4 focus:ring-sun/70; }
+  .input-dark { @apply w-full rounded-2xl bg-white/10 text-white px-4 py-3 font-bold placeholder:text-white/40 outline-none focus:ring-4 focus:ring-sun/60 border border-white/10; }
+  .label { @apply mb-1 block text-sm font-extrabold text-white/80; }
+}
+.safe-b { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
