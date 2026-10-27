@@ -64,3 +64,4 @@ Tests: `cd server && npm test` (scoring, importer, and a full multi-client Socke
 
 * **Live game state is held in server memory** (and persisted per question). One backend instance is fully supported. With several instances, enable `REDIS_URL` (broadcast adapter) **and** route all sockets/HTTP for a given game to the same instance (sticky routing); otherwise a PIN created on one instance isn't visible on another. A server restart ends games in progress (their partial data stays in the DB).
 * Uploaded images are stored on disk (`UPLOAD_DIR`); switch to S3/R2 if you run without a persistent disk.
+"# quizarena" 
